@@ -49,6 +49,10 @@ public class ClientMsgManager implements Runnable {
 
         try {
 
+
+            out.printf(Thread.currentThread().getName() + " : "); // Client side name pointer
+
+
             userInput = in.readLine(); // 1. Collects User Input
 
             logger.log(Level.INFO, username + " : " + userInput); // 2. Logs every User Input regardless
@@ -56,12 +60,14 @@ public class ClientMsgManager implements Runnable {
             // Checks if is NOT Command, null or empty
             if (userInput != null && !userInput.equals("/who") && !userInput.equals("/q") && !userInput.isEmpty()) {
 
-                System.out.print(Thread.currentThread().getName() + " : "); // Client side name pointer
 
                 // Echoes User Input to every user connected to Server
                 for (int i = 0; i < server.getClientList().size(); i++) {
 
-                    server.getClientList().get(i).out.println(Thread.currentThread().getName() + " : " + userInput);
+                    if(!server.getClientList().get(i).equals(this)) {
+
+                        server.getClientList().get(i).out.println(Thread.currentThread().getName() + " : " + userInput);
+                    }
                 }
             }
 
@@ -126,12 +132,30 @@ public class ClientMsgManager implements Runnable {
         }
     }
 
+    private void selectUsername() {
+
+        try {
+
+            out.println("Username: ");
+
+            userInput = in.readLine();
+
+            username = userInput;
+
+            Thread.currentThread().setName(username);
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
 
-        logger.log(Level.INFO, "Your chat session is open\n");
+        logger.log(Level.INFO, "User chat session is open\n");
 
-        this.username = Thread.currentThread().getName();
+        username = Thread.currentThread().getName();
 
         setupIOstreams();
 

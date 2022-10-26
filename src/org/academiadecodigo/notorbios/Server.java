@@ -35,6 +35,7 @@ public class Server {
 
                 clientSocket = bindServerSocket.accept(); // blocking method, holds for connection
 
+
                 clientList.offer(new ClientMsgManager(clientSocket, this));
 
                 cachedThreadPool.submit(clientList.getLast()); // creates new thread for a message manager on request and gives it to a new client
