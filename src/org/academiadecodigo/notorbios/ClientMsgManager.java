@@ -122,6 +122,7 @@ public class ClientMsgManager implements Runnable {
                 for (int i = 0; i < server.getClientList().size(); i++) {
 
                     out.println(server.getClientList().get(i).username);
+                    break;
                 }
 
             case "/q":
@@ -129,6 +130,7 @@ public class ClientMsgManager implements Runnable {
                 out.println("You have been disconnected. Bye!");
 
                 closeStreamsAndSockets();
+                break;
         }
     }
 
