@@ -49,20 +49,23 @@ public class ClientMsgManager implements Runnable {
 
         try {
 
-            userInput = in.readLine();
+            userInput = in.readLine(); // 1. Collects User Input
 
-            logger.log(Level.INFO, username + " : " + userInput);
+            logger.log(Level.INFO, username + " : " + userInput); // 2. Logs every User Input regardless
 
-            if (userInput != null && !userInput.equals("/who") && !userInput.equals("/q")) {
+            // Checks if is NOT Command, null or empty
+            if (userInput != null && !userInput.equals("/who") && !userInput.equals("/q") && !userInput.isEmpty()) {
 
-                System.out.print(Thread.currentThread().getName() + " : ");
+                System.out.print(Thread.currentThread().getName() + " : "); // Client side name pointer
 
+                // Echoes User Input to every user connected to Server
                 for (int i = 0; i < server.getClientList().size(); i++) {
 
                     server.getClientList().get(i).out.println(Thread.currentThread().getName() + " : " + userInput);
                 }
             }
 
+            // If null disconnects user from chat for safety
             if (userInput == null) {
 
                 logger.log(Level.INFO, Thread.currentThread().getName() + " has disconnected.");
@@ -102,20 +105,25 @@ public class ClientMsgManager implements Runnable {
         }
     }
 
+    /**
+     * Will perform different actions depending on command requested
+     */
     private void userCommands() {
 
         switch (userInput) {
             case "/who":
+
                 for (int i = 0; i < server.getClientList().size(); i++) {
 
                     out.println(server.getClientList().get(i).username);
                 }
+
             case "/q":
+
                 out.println("You have been disconnected. Bye!");
+
                 closeStreamsAndSockets();
         }
-
-
     }
 
     @Override
