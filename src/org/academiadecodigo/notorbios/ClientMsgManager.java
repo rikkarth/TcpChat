@@ -16,9 +16,12 @@ public class ClientMsgManager implements Runnable {
     private PrintWriter out;
     private BufferedReader in;
     private String userInput;
+    private String username;
 
     public ClientMsgManager(Socket clientSocket, Server server) {
         this.clientSocket = clientSocket;
+
+
         this.server = server;
     }
 
@@ -41,21 +44,21 @@ public class ClientMsgManager implements Runnable {
     /**
      * Receives Input and sends that Input to every client connected to the Server
      */
-    private void receiveAndSendStream() {
+    private void generalChatStream() {
 
         try {
 
             userInput = in.readLine();
 
-            if (userInput != null) {
+            logger.log(Level.INFO, username + " : " + userInput);
+
+            if (userInput != null && !userInput.equals("/who")) {
 
                 System.out.print(Thread.currentThread().getName() + " : ");
 
-                System.out.println(userInput);
+                for (int i = 0; i < server.getClientList().size(); i++) {
 
-                for(int i = 0; i < server.getClientList().size(); i++){
-
-                    server.getClientList().get(i).out.println(userInput);
+                    server.getClientList().get(i).out.println(Thread.currentThread().getName() + " : " + userInput);
                 }
             }
 
@@ -81,15 +84,29 @@ public class ClientMsgManager implements Runnable {
 
         try {
 
+            server.getClientList().remove(this);
+
             out.close();
 
             in.close();
 
             clientSocket.close();
 
+
         } catch (IOException e) {
 
             e.printStackTrace();
+        }
+    }
+
+    private void whoList() {
+
+        if (userInput.equals("/who")) {
+
+            for (int i = 0; i < server.getClientList().size(); i++) {
+
+                out.println(server.getClientList().get(i).username);
+            }
         }
     }
 
@@ -98,11 +115,14 @@ public class ClientMsgManager implements Runnable {
 
         logger.log(Level.INFO, "Your chat session is open\n");
 
+        this.username = Thread.currentThread().getName();
+
         setupIOstreams();
 
         while (!clientSocket.isClosed()) {
 
-            receiveAndSendStream();
+            generalChatStream();
+            whoList();
         }
     }
 }
