@@ -31,13 +31,17 @@ public class ClientMsgManager implements Runnable {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
 
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
         } catch (IOException e) {
 
             e.printStackTrace();
         }
     }
 
-    private void receiveUserInput() {
+    /**
+     * Receives Input and sends that Input to every client connected to the Server
+     */
+    private void receiveAndSendStream() {
 
         try {
 
@@ -51,7 +55,7 @@ public class ClientMsgManager implements Runnable {
 
                 for(int i = 0; i < server.getClientList().size(); i++){
 
-                    server.getClientList().get(i).getOut().println(userInput);
+                    server.getClientList().get(i).out.println(userInput);
                 }
             }
 
@@ -68,6 +72,9 @@ public class ClientMsgManager implements Runnable {
         }
     }
 
+    /**
+     * Closes client streams and sockets
+     */
     private void closeStreamsAndSockets() {
 
         //System.out.println("Closing Streams and Sockets...");
@@ -86,14 +93,6 @@ public class ClientMsgManager implements Runnable {
         }
     }
 
-    public PrintWriter getOut() {
-        return out;
-    }
-
-    public String getUserInput() {
-        return userInput;
-    }
-
     @Override
     public void run() {
 
@@ -103,7 +102,7 @@ public class ClientMsgManager implements Runnable {
 
         while (!clientSocket.isClosed()) {
 
-            receiveUserInput();
+            receiveAndSendStream();
         }
     }
 }

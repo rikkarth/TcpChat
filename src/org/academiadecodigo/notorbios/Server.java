@@ -39,9 +39,6 @@ public class Server {
 
                 cachedThreadPool.submit(clientList.getLast()); // creates new thread for a message manager on request and gives it to a new client
 
-
-
-
             } catch (NumberFormatException e) {
 
                 System.err.println("Usage: WebServer [PORT]\n");
@@ -96,7 +93,5 @@ public class Server {
         Server server = new Server();
 
         server.start();
-
-
     }
 }
