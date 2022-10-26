@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +53,7 @@ public class ClientMsgManager implements Runnable {
 
             logger.log(Level.INFO, username + " : " + userInput);
 
-            if (userInput != null && !userInput.equals("/who")) {
+            if (userInput != null && !userInput.equals("/who") && !userInput.equals("/q")) {
 
                 System.out.print(Thread.currentThread().getName() + " : ");
 
@@ -82,6 +83,8 @@ public class ClientMsgManager implements Runnable {
 
         //System.out.println("Closing Streams and Sockets...");
 
+        logger.log(Level.INFO, Thread.currentThread().getName() + " has disconnected.");
+
         try {
 
             server.getClientList().remove(this);
@@ -99,15 +102,20 @@ public class ClientMsgManager implements Runnable {
         }
     }
 
-    private void whoList() {
+    private void userCommands() {
 
-        if (userInput.equals("/who")) {
+        switch (userInput) {
+            case "/who":
+                for (int i = 0; i < server.getClientList().size(); i++) {
 
-            for (int i = 0; i < server.getClientList().size(); i++) {
-
-                out.println(server.getClientList().get(i).username);
-            }
+                    out.println(server.getClientList().get(i).username);
+                }
+            case "/q":
+                out.println("You have been disconnected. Bye!");
+                closeStreamsAndSockets();
         }
+
+
     }
 
     @Override
@@ -122,7 +130,7 @@ public class ClientMsgManager implements Runnable {
         while (!clientSocket.isClosed()) {
 
             generalChatStream();
-            whoList();
+            userCommands();
         }
     }
 }
