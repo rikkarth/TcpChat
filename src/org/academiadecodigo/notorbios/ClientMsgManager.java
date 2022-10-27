@@ -39,6 +39,7 @@ public class ClientMsgManager implements Runnable {
 
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -57,11 +58,10 @@ public class ClientMsgManager implements Runnable {
             // Checks if is NOT Command, null or empty
             if (userInput != null && !userInput.equals("/who") && !userInput.equals("/q") && !userInput.isEmpty()) {
 
-
-                // Echoes User Input to every user connected to Server
+                // Echoes User Input to every user connected to Server but himself
                 for (int i = 0; i < server.getClientList().size(); i++) {
 
-                    if(!server.getClientList().get(i).equals(this)) {
+                    if (!server.getClientList().get(i).equals(this)) {
 
                         server.getClientList().get(i).out.println(Thread.currentThread().getName() + " : " + userInput);
                     }
@@ -115,17 +115,12 @@ public class ClientMsgManager implements Runnable {
 
         switch (userInput) {
             case "/who":
-
-                for (int i = 0; i < server.getClientList().size(); i++) {
-
-                    out.println(server.getClientList().get(i).username);
-                    break;
-                }
+                for (ClientMsgManager client : server.getClientList())
+                    out.println(client.username);
+                break;
 
             case "/q":
-
                 out.println("You have been disconnected. Bye!");
-
                 closeStreamsAndSockets();
                 break;
         }
@@ -155,8 +150,6 @@ public class ClientMsgManager implements Runnable {
         logger.log(Level.INFO, "User chat session is open\n");
 
         username = Thread.currentThread().getName();
-
-        setupIOstreams();
 
         while (!clientSocket.isClosed()) {
 
