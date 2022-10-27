@@ -16,12 +16,14 @@ public class Server {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
     private final LinkedList<ClientMsgManager> clientList = new LinkedList<>();
     private final List<ClientMsgManager> synchronizedclientList = Collections.synchronizedList(clientList);
+    private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
     private ServerSocket bindServerSocket = null;
-    private Socket clientSocket = null;
 
     public Server() {
 
         setupServerSocket();
+
+        logger.log(Level.INFO, "server bind to " + getAddress(bindServerSocket) + "\n");
     }
 
     /**
@@ -29,30 +31,10 @@ public class Server {
      */
     public void start() {
 
-        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+        awaitClientConnection();
 
-        try {
-
-            clientSocket = bindServerSocket.accept(); // blocking method, holds for connection
-
-            clientList.offer(new ClientMsgManager(clientSocket, this));
-
-            cachedThreadPool.submit(clientList.getLast()); // creates new thread for a message manager on request and gives it to a new client
-
-        } catch (NumberFormatException e) {
-
-            System.err.println("Usage: WebServer [PORT]\n");
-
-            System.exit(1);
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
-
-        if (bindServerSocket.isBound()) {
+        if (bindServerSocket.isBound())
             start();
-        }
 
         System.out.println("bye");
     }
@@ -69,7 +51,27 @@ public class Server {
 
             bindServerSocket = new ServerSocket(DEFAULT_PORT);
 
-            logger.log(Level.INFO, "server bind to " + getAddress(bindServerSocket) + "\n");
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    private void awaitClientConnection() {
+
+        try {
+
+            Socket clientSocket = bindServerSocket.accept(); // blocking method, holds for connection
+
+            clientList.offer(new ClientMsgManager(clientSocket, this)); // adds client to LinkedList
+
+            cachedThreadPool.submit(clientList.getLast()); // creates new thread for a message manager on request and gives it to a new client
+
+        } catch (NumberFormatException e) {
+
+            System.err.println("Usage: WebServer [PORT]\n");
+
+            System.exit(1);
 
         } catch (IOException e) {
 
