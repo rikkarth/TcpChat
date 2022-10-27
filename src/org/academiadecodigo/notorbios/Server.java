@@ -3,7 +3,9 @@ package org.academiadecodigo.notorbios;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -13,7 +15,7 @@ public class Server {
 
     private static final Logger logger = Logger.getLogger(Server.class.getName());
     private final LinkedList<ClientMsgManager> clientList = new LinkedList<>();
-    private static final int DEFAULT_PORT = 8085;
+    private final List<ClientMsgManager> synchronizedclientList = Collections.synchronizedList(clientList);
     private ServerSocket bindServerSocket = null;
     private Socket clientSocket = null;
 
@@ -29,31 +31,32 @@ public class Server {
 
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
-        while (bindServerSocket.isBound()) {
+        try {
 
-            try {
+            clientSocket = bindServerSocket.accept(); // blocking method, holds for connection
 
-                clientSocket = bindServerSocket.accept(); // blocking method, holds for connection
+            clientList.offer(new ClientMsgManager(clientSocket, this));
 
+            cachedThreadPool.submit(clientList.getLast()); // creates new thread for a message manager on request and gives it to a new client
 
-                clientList.offer(new ClientMsgManager(clientSocket, this));
+        } catch (NumberFormatException e) {
 
-                cachedThreadPool.submit(clientList.getLast()); // creates new thread for a message manager on request and gives it to a new client
+            System.err.println("Usage: WebServer [PORT]\n");
 
-            } catch (NumberFormatException e) {
+            System.exit(1);
 
-                System.err.println("Usage: WebServer [PORT]\n");
+        } catch (IOException e) {
 
-                System.exit(1);
+            e.printStackTrace();
+        }
 
-            } catch (IOException e) {
-
-                e.printStackTrace();
-            }
+        if (bindServerSocket.isBound()) {
+            start();
         }
 
         System.out.println("bye");
     }
+
 
     /**
      * Sets up server socket to DEFAULT_PORT
@@ -61,6 +64,8 @@ public class Server {
     private void setupServerSocket() {
 
         try {
+
+            final int DEFAULT_PORT = 8085;
 
             bindServerSocket = new ServerSocket(DEFAULT_PORT);
 
